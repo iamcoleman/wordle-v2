@@ -199,7 +199,7 @@ export default {
 
   methods: {
     onKeyboardClick(key) {
-      console.log(key);
+      this.$emit('keyInput', key);
     },
 
     letterClass(letter) {
@@ -231,8 +231,8 @@ button {
   border-radius: 4px;
   cursor: pointer;
   user-select: none;
-  background-color: lightgray;
-  color: black;
+  background-color: $kb-bg-color;
+  color: $kb-text-tbd-color;
   flex: 1;
   display: flex;
   justify-content: center;
@@ -258,17 +258,17 @@ button {
 }
 
 .absent {
-  background-color: grey;
-  color: white;
+  background-color: $game-absent;
+  color: $kb-text-color;
 }
 
 .present {
-  background-color: darkgoldenrod;
-  color: white;
+  background-color: $game-present;
+  color: $kb-text-color;
 }
 
 .correct {
-  background-color: green;
-  color: white;
+  background-color: $game-correct;
+  color: $kb-text-color;
 }
 </style>

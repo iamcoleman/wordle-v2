@@ -1,4 +1,30 @@
+// Variables
 $max-width: 500px;
+
+// Colors
+$white: #ffffff;
+$color-tone-1: #1a1a1b;
+$color-tone-2: #787c7e;
+$color-tone-3: #878a8c;
+$color-tone-4: #d3d6da;
+$color-tone-5: #edeff1;
+$color-tone-6: #f6f7f8;
+$color-tone-7: #ffffff;
+$color-yellow: #c9b458;
+$color-green: #6aaa64;
+$color-darkgrey: #86888a;
+
+// Color Variables
+$game-absent: $color-darkgrey;
+$game-present: $color-yellow;
+$game-correct: $color-green;
+$tile-border-empty: $color-tone-4;
+$tile-border-tbd: $color-tone-3;
+$tile-text-color: $color-tone-7;
+$tile-text-tbd-color: $color-tone-1;
+$kb-text-color: $color-tone-7;
+$kb-text-tbd-color: $color-tone-1;
+$kb-bg-color: $color-tone-4;
 
 .app-container {
   max-width: $max-width !important;
