@@ -1,14 +1,40 @@
 <template>
   <v-container id="board" :style="{ width: boardWidth + 'px' }">
-    <BoardRow v-bind:letters="boardData[0]"></BoardRow>
-    <BoardRow v-bind:letters="boardData[1]"></BoardRow>
-    <BoardRow v-bind:letters="boardData[2]"></BoardRow>
-    <BoardRow v-bind:letters="boardData[3]"></BoardRow>
-    <BoardRow v-bind:letters="boardData[4]"></BoardRow>
-    <BoardRow v-bind:letters="boardData[5]"></BoardRow>
+    <BoardRow
+      v-bind:letters="boardData[0]"
+      v-bind:win="winAnimation[0]"
+      v-bind:shake="shakeAnimation[0]"
+    ></BoardRow>
+    <BoardRow
+      v-bind:letters="boardData[1]"
+      v-bind:win="winAnimation[1]"
+      v-bind:shake="shakeAnimation[1]"
+    ></BoardRow>
+    <BoardRow
+      v-bind:letters="boardData[2]"
+      v-bind:win="winAnimation[2]"
+      v-bind:shake="shakeAnimation[2]"
+    ></BoardRow>
+    <BoardRow
+      v-bind:letters="boardData[3]"
+      v-bind:win="winAnimation[3]"
+      v-bind:shake="shakeAnimation[3]"
+    ></BoardRow>
+    <BoardRow
+      v-bind:letters="boardData[4]"
+      v-bind:win="winAnimation[4]"
+      v-bind:shake="shakeAnimation[4]"
+    ></BoardRow>
+    <BoardRow
+      v-bind:letters="boardData[5]"
+      v-bind:win="winAnimation[5]"
+      v-bind:shake="shakeAnimation[5]"
+    ></BoardRow>
 <!--    {{ windowHeight }}-->
 <!--    {{ windowWidth }}-->
 <!--    {{ boardWidth }}-->
+<!--    {{ shakeAnimation }}-->
+<!--    {{ winAnimation }}-->
   </v-container>
 </template>
 
@@ -24,6 +50,8 @@ export default {
 
   props: {
     boardData: Array,
+    winAnimation: Array,
+    shakeAnimation: Array,
   },
 
   data: () => ({

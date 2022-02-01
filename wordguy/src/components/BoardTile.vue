@@ -20,20 +20,25 @@ export default {
     letter: String,
     status: String,
     pos: Number,
+    win: Boolean,
+    shake: Boolean,
   },
 
   computed: {
     flipInClass: function computeFlipInClass() {
       return `anim-flip-in-${this.pos}`;
     },
+
+    bounceClass: function computeBounceClass() {
+      return `anim-bounce-${this.pos}`;
+    },
   },
 
   watch: {
     letter: {
       handler: function watchLetter(newVal, oldVal) {
-        console.log('New:', newVal, '- Old:', oldVal);
         this.$nextTick(() => {
-          if (oldVal === undefined && !!newVal && this.status !== 'tbd') {
+          if (!oldVal && !!newVal && this.status !== 'tbd') {
             // initializing the board on refresh
             this.$refs.tile.$el.classList.add(this.flipInClass);
           } else if (!oldVal && !!newVal) {
@@ -59,6 +64,16 @@ export default {
         });
       },
     },
+
+    shake: {
+      handler: function watchShake(newVal, oldVal) {
+        this.$nextTick(() => {
+          if (!oldVal && newVal) {
+            this.$refs.tile.$el.classList.add('anim-shake');
+          }
+        });
+      },
+    },
   },
 
   mounted() {
@@ -73,9 +88,7 @@ export default {
 
   methods: {
     onAnimationEnd(val) {
-      // console.log(val);
       if (val.srcElement.classList.contains(this.flipInClass)) {
-        console.log('FlipIn');
         this.displayLetter = true;
         this.$refs.tile.$el.classList.remove(this.flipInClass);
         this.$refs.tile.$el.classList.add('anim-flip-out');
@@ -85,12 +98,18 @@ export default {
           this.$refs.tile.$el.classList.remove('tile-tbd');
         }
       } else if (val.srcElement.classList.contains('anim-flip-out')) {
-        console.log('FlipOut');
         this.$refs.tile.$el.classList.remove('anim-flip-out');
+        // check if winner
+        if (this.win) {
+          this.$refs.tile.$el.classList.add(this.bounceClass);
+        }
       } else if (val.srcElement.classList.contains('anim-pop')) {
-        console.log('Pop');
         this.$refs.tile.$el.classList.remove('anim-pop');
         this.$refs.tile.$el.classList.add(this.statusClass());
+      } else if (val.srcElement.classList.contains(this.bounceClass)) {
+        this.$refs.tile.$el.classList.remove(this.bounceClass);
+      } else if (val.srcElement.classList.contains('anim-shake')) {
+        this.$refs.tile.$el.classList.remove('anim-shake');
       }
     },
 
@@ -246,5 +265,85 @@ export default {
   animation-name: FlipOut;
   animation-duration: 250ms;
   animation-timing-function: ease-in;
+}
+
+@keyframes Bounce {
+  0%, 20% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-30px);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+  80% {
+    transform: translateY(2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+.anim-bounce {
+  &-0 {
+    animation-delay: 200ms;
+    animation-name: Bounce;
+    animation-duration: 1000ms;
+  }
+  &-1 {
+    animation-delay: 300ms;
+    animation-name: Bounce;
+    animation-duration: 1000ms;
+  }
+  &-2 {
+    animation-delay: 400ms;
+    animation-name: Bounce;
+    animation-duration: 1000ms;
+  }
+  &-3 {
+    animation-delay: 500ms;
+    animation-name: Bounce;
+    animation-duration: 1000ms;
+  }
+  &-4 {
+    animation-delay: 600ms;
+    animation-name: Bounce;
+    animation-duration: 1000ms;
+  }
+  &-5 {
+    animation-delay: 700ms;
+    animation-name: Bounce;
+    animation-duration: 1000ms;
+  }
+}
+
+@keyframes Shake {
+  10%,
+  90% {
+    transform: translateX(-1px);
+  }
+
+  20%,
+  80% {
+    transform: translateX(2px);
+  }
+
+  30%,
+  50%,
+  70% {
+    transform: translateX(-4px);
+  }
+
+  40%,
+  60% {
+    transform: translateX(4px);
+  }
+}
+.anim-shake {
+  animation-name: Shake;
+  animation-duration: 600ms;
 }
 </style>
