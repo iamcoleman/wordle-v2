@@ -1,8 +1,8 @@
 <template>
   <v-dialog v-model="show" max-width="500px">
-    <v-card @click.stop="show=false" style="cursor: default;">
+    <v-card @click.stop="show=false" style="cursor: default;" v-ripple="false">
       <v-card-text>
-        <p class="text--primary">Guess the <strong>WORDLE</strong> in 6 tries.</p>
+        <p class="text--primary">Guess the <strong>WORDSKI</strong> in 6 tries.</p>
         <p class="text--primary">
           Each guess must be a valid 6 letter word. Press the submit key (bottom left) to submit
           your guess.
@@ -42,7 +42,7 @@
 
         <p class="text--primary">
           <strong>
-            A new WORDLE will be available each day!
+            A new WORDSKI will be available each day!
           </strong>
         </p>
       </v-card-text>

@@ -2,22 +2,34 @@
   <v-app>
     <!-- Dialogs -->
     <DialogNewGame v-model="showNewGameDialog"></DialogNewGame>
-    <DialogStats v-model="showStatsDialog"></DialogStats>
+    <DialogStats
+      v-model="showStatsDialog"
+      v-bind:msNewGame="msUntilNewGameAvailable"
+      v-bind:curr-game-status="gameStatus"
+    ></DialogStats>
 
     <v-app-bar
       app
       color="white"
       flat
+      outlined
     >
-      <v-container class="py-0 fill-height top-nav app-container">
+      <v-container class="py-0 fill-height app-container">
+        <v-btn icon @click="openNewGame(0)">
+          <v-icon>fas fa-info</v-icon>
+        </v-btn>
         <v-spacer></v-spacer>
-        <h1>Wordle v2</h1>
+        <h1>WORDSKI</h1>
         <v-spacer></v-spacer>
-        <v-btn @click="test()">test</v-btn>
+        <v-btn icon @click="openStats(0)">
+          <v-icon>far fa-chart-bar</v-icon>
+        </v-btn>
+<!--        <v-btn @click="test()">test</v-btn>-->
       </v-container>
     </v-app-bar>
 
     <v-main>
+      <v-divider style="max-width: 500px; margin: 0 auto;"></v-divider>
       <v-container
         ref="board-container"
         id="board-container"
@@ -33,7 +45,7 @@
     </v-main>
 
     <v-footer app color="white">
-      <v-container class="top-nav app-container fill-height">
+      <v-container class="app-container fill-height" style="padding: 0;">
         <Keyboard
           v-bind:keyboard-absent="keyboardStatus.absent"
           v-bind:keyboard-present="keyboardStatus.present"
@@ -69,6 +81,7 @@ export default {
     currentDate: new Date(),
 
     solution: null,
+    dayOffset: null,
     lastCompletedTs: null,
     gameStatus: 'IN_PROGRESS',
     winAnimation: [false, false, false, false, false, false],
@@ -77,6 +90,7 @@ export default {
     // dialogs
     showNewGameDialog: false,
     showStatsDialog: false,
+    msUntilNewGameAvailable: 0,
 
     newGameState: {
       boardData: [
@@ -242,6 +256,24 @@ export default {
       lastPlayedTs: null,
       rowIndex: 0,
       solution: null,
+      dayOffset: null,
+    },
+    newStatistics: {
+      averageGuesses: null,
+      currentStreak: 0,
+      gamesPlayed: 0,
+      gamesWon: 0,
+      maxStreak: 0,
+      winPercentage: 0,
+      guesses: {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+        6: 0,
+        fail: 0,
+      },
     },
 
     keyboardStatus: {
@@ -442,11 +474,23 @@ export default {
         },
       ];
     },
+
+    newGameAvailable: function computeNewGameAvailable() {
+      if (this.lastCompletedTs) {
+        const lastDate = new Date(this.lastCompletedTs);
+        lastDate.setHours(0, 0, 0, 0);
+        const currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0);
+
+        return lastDate < currentDate;
+      }
+
+      return false;
+    },
   },
 
   mounted() {
     if (localStorage.gameState) {
-      console.log('gameState exists');
       // load the gameState
       this.loadGameFromStorage();
     } else {
@@ -462,6 +506,13 @@ export default {
       day = Math.ceil(day / (1000 * 60 * 60 * 24));
 
       return this.wordList[day];
+    },
+
+    getDayOffset() {
+      const dayOffset = Math.abs(this.currentDate.setHours(0, 0, 0, 0)
+        - this.startingDate.setHours(0, 0, 0, 0));
+
+      return Math.ceil(dayOffset / (1000 * 60 * 60 * 24));
     },
 
     onKeyInput(key) {
@@ -519,6 +570,10 @@ export default {
         Vue.set(this.winAnimation, this.currentRowIndex, true);
         // save `WIN` to storage
         this.saveGameToStorage('WIN');
+        // generate statistics
+        this.generateStats();
+        // open statistics dialog (1000ms for flips, 1700ms for bounce)
+        this.openStats(1000 + 1700);
         return;
       }
 
@@ -530,6 +585,8 @@ export default {
         this.lastCompletedTs = new Date().getTime();
         // save `FAIL` to storage
         this.saveGameToStorage('FAIL');
+        // generate statistics
+        this.generateStats();
         return;
       }
 
@@ -598,25 +655,29 @@ export default {
 
       // handle all 'present' next and remove present chars from `solutionCopy`
       for (let i = 0; i < this.currentRowLetters.length; i += 1) {
-        const currLetter = this.currentRowLetters[i];
-        const charIndex = solutionCopy.indexOf(currLetter);
+        // skip all `rowData` indexes that have already been populated with 'correct'
+        if (!rowData[i]) {
+          const currLetter = this.currentRowLetters[i];
+          const charIndex = solutionCopy.indexOf(currLetter);
 
-        if (charIndex > -1) {
-          // the character is 'present'
-          rowData[i] = {
-            letter: currLetter,
-            status: 'present',
-          };
-          // remove character from `solutionCopy` bc it has been accounted for
-          solutionCopy = this.setCharAt(solutionCopy, charIndex, '0');
+          if (charIndex > -1) {
+            // the character is 'present'
+            rowData[i] = {
+              letter: currLetter,
+              status: 'present',
+            };
+            // remove character from `solutionCopy` bc it has been accounted for
+            solutionCopy = this.setCharAt(solutionCopy, charIndex, '0');
+          }
         }
       }
 
       // handle all 'absent' last
       for (let i = 0; i < this.currentRowLetters.length; i += 1) {
-        const currLetter = this.currentRowLetters[i];
+        // skip all `rowData` indexes that have already been populated with 'correct' | 'absent'
+        if (!rowData[i]) {
+          const currLetter = this.currentRowLetters[i];
 
-        if (rowData[i] === null) {
           rowData[i] = {
             letter: currLetter,
             status: 'absent',
@@ -641,8 +702,84 @@ export default {
       }, 600);
     },
 
-    endGame(victory) {
-      console.log(victory);
+    generateStats() {
+      let prevStats = null;
+      if (!localStorage.statistics) {
+        console.log('No statistics found in LocalStorage...');
+        prevStats = this.newStatistics;
+      } else {
+        prevStats = JSON.parse(localStorage.getItem('statistics'));
+      }
+
+      const newStats = JSON.parse(JSON.stringify(prevStats)); // deep copy
+
+      // update `currentStreak`, `gamesPlayed`, and `gamesWon`
+      if (this.gameStatus === 'WIN') {
+        newStats.currentStreak += 1;
+        newStats.gamesPlayed += 1;
+        newStats.gamesWon += 1;
+      } else {
+        newStats.currentStreak = 0;
+        newStats.gamesPlayed += 1;
+      }
+
+      // update `maxStreak`
+      newStats.maxStreak = Math.max(newStats.currentStreak, newStats.maxStreak);
+
+      // update `winPercentage`
+      newStats.winPercentage = Math.round((newStats.gamesWon / newStats.gamesPlayed) * 100);
+
+      // update `guesses`
+      let numOfGuesses = null;
+      if (this.gameStatus === 'WIN') {
+        numOfGuesses = (this.currentRowIndex + 1).toString();
+      } else {
+        numOfGuesses = 'fail';
+      }
+      newStats.guesses[numOfGuesses] += 1;
+
+      // update `averageGuesses`
+      let totalGuesses = 0;
+      totalGuesses += newStats.guesses['1'];
+      totalGuesses += (newStats.guesses['2'] * 2);
+      totalGuesses += (newStats.guesses['3'] * 3);
+      totalGuesses += (newStats.guesses['4'] * 4);
+      totalGuesses += (newStats.guesses['5'] * 5);
+      totalGuesses += (newStats.guesses['6'] * 6);
+      totalGuesses += (newStats.guesses.fail * 6);
+      newStats.averageGuesses = (totalGuesses / newStats.gamesPlayed);
+
+      // save `newStats` to LocalStorage
+      const parsedNewStats = JSON.stringify(newStats);
+      localStorage.setItem('statistics', parsedNewStats);
+    },
+
+    loadNextGame(lastPlayedTs) {
+      // set `solution` to today's solution
+      this.solution = this.getTodaysSolution();
+      // set `dayOffset` to today's offset
+      this.dayOffset = this.getDayOffset();
+      // set `gameStatus` to 'IN_PROGRESS'
+      this.gameStatus = this.newGameState.gameStatus;
+      // set `boardData` to default
+      this.boardData = this.newGameState.boardData;
+      // set `currentRowIndex` to 0
+      this.currentRowIndex = this.newGameState.rowIndex;
+
+      // make the gameState
+      const gameState = {
+        boardData: this.boardData,
+        lastCompletedTs: this.lastCompletedTs,
+        lastPlayedTs,
+        gameStatus: this.gameStatus,
+        rowIndex: this.currentRowIndex,
+        solution: this.solution,
+        dayOffset: this.dayOffset,
+      };
+
+      // save to LocalStorage
+      const parsedGameState = JSON.stringify(gameState);
+      localStorage.setItem('gameState', parsedGameState);
     },
 
     loadGameFromStorage() {
@@ -651,14 +788,25 @@ export default {
       }
 
       const gameState = JSON.parse(localStorage.getItem('gameState'));
-      console.log(gameState);
+
+      // set `lastCompletedTs` before gameStatus check because `newGameAvailable` requires it
+      this.lastCompletedTs = gameState.lastCompletedTs;
+
+      // check if game is in completed state
+      if (gameState.gameStatus === 'WIN' || gameState.gameStatus === 'FAIL') {
+        // then, check if new game is available
+        if (this.newGameAvailable) {
+          this.loadNextGame(gameState.lastPlayedTs);
+          return;
+        }
+      }
 
       // set `solution`
       this.solution = gameState.solution;
+      // set `dayOffset`
+      this.dayOffset = gameState.dayOffset;
       // set `gameStatus`
       this.gameStatus = gameState.gameStatus;
-      // set `lastCompletedTs`
-      this.lastCompletedTs = gameState.lastCompletedTs;
       // set `boardData`
       this.boardData = gameState.boardData;
       // set `currentRowIndex`
@@ -675,22 +823,14 @@ export default {
     },
 
     saveGameToStorage() {
-      const savedBoardData = [];
-      for (let i = 0; i < this.boardData.length; i += 1) {
-        if (this.boardData[i][0].letter !== '') {
-          savedBoardData.push(this.boardData[i]);
-        } else {
-          savedBoardData.push(this.newGameState.boardData[0]);
-        }
-      }
-
       const gameState = {
-        boardData: savedBoardData,
+        boardData: this.boardData,
         lastCompletedTs: this.lastCompletedTs,
         lastPlayedTs: new Date().getTime(),
         rowIndex: this.currentRowIndex,
         gameStatus: this.gameStatus,
         solution: this.solution,
+        dayOffset: this.dayOffset,
       };
 
       const parsedGameState = JSON.stringify(gameState);
@@ -700,6 +840,8 @@ export default {
     createNewGame() {
       // set `solution` to today's solution
       this.solution = this.getTodaysSolution();
+      // set `dayOffset` to today's offset
+      this.dayOffset = this.getDayOffset();
 
       const gameState = {
         boardData: this.newGameState.boardData,
@@ -708,12 +850,38 @@ export default {
         gameStatus: this.newGameState.gameStatus,
         rowIndex: this.newGameState.rowIndex,
         solution: this.solution,
+        dayOffset: this.dayOffset,
       };
 
       const parsedGameState = JSON.stringify(gameState);
       localStorage.setItem('gameState', parsedGameState);
 
       // TODO: Launch the 'instruction/new game' dialog
+    },
+
+    updateMsUntilNewGameAvailable() {
+      if (!this.newGameAvailable) {
+        const currDateTime = new Date();
+
+        this.msUntilNewGameAvailable = (24 * 60 * 60 * 1000) - Math.abs(
+          new Date().setHours(0, 0, 0, 0) - currDateTime.getTime(),
+        );
+      } else {
+        this.msUntilNewGameAvailable = 0;
+      }
+    },
+
+    openStats(delay = 0) {
+      setTimeout(() => {
+        this.updateMsUntilNewGameAvailable();
+        this.showStatsDialog = true;
+      }, delay);
+    },
+
+    openNewGame(delay = 0) {
+      setTimeout(() => {
+        this.showNewGameDialog = true;
+      }, delay);
     },
 
     test() {
@@ -735,8 +903,14 @@ export default {
       // console.log(solutionCopy);
       // console.log(this.solution);
 
-      this.showNewGameDialog = true;
+      // this.showNewGameDialog = true;
       // this.showStatsDialog = true;
+      // this.openNewGame();
+      this.openStats();
+
+      // console.log(new Date().setHours(0, 0, 0, 0));
+
+      // console.log(this.boardData);
     },
 
     /* Replaces the character at `index` with `char` in string `str` */

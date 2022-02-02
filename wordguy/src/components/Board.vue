@@ -61,12 +61,13 @@ export default {
 
   computed: {
     boardWidth: function getBoardWidth() {
-      // 0.84 is a good ratio for current setup
-      const estBoardHeight = Math.floor(this.windowWidth / 0.84);
+      // 0.96 is a good ratio for current setup
+      const estBoardHeight = Math.floor(this.windowWidth / 0.96);
+      // 290px == height of bar and keyboard
       const containerHeight = this.windowHeight - 290;
 
       if (estBoardHeight > containerHeight) {
-        return Math.floor(containerHeight * 0.84);
+        return Math.floor(containerHeight * 0.96);
       }
 
       return 500;
