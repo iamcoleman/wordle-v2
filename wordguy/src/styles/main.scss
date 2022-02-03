@@ -29,3 +29,7 @@ $kb-bg-color: $color-tone-4;
 .app-container {
   max-width: $max-width !important;
 }
+
+.disable-dbl-tap-zoom {
+  touch-action: manipulation;
+}

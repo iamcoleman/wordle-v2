@@ -5,21 +5,21 @@
         <!-- STATISTICS -->
         <p class="text-h6 text-center text--primary">STATISTICS</p>
         <v-container style="padding: 0;">
-          <v-row class="text-center">
+          <v-row class="text-center flex-nowrap">
             <v-col>
-              <p class="text-h3 text--primary stat-value">{{ gamesPlayed }}</p>
+              <p class="text--primary stat-value">{{ gamesPlayed }}</p>
               <p class="stat-desc">Games Played</p>
             </v-col>
             <v-col>
-              <p class="text-h3 text--primary stat-value">{{ winPercentage }}%</p>
+              <p class="text--primary stat-value">{{ winPercentage }}%</p>
               <p class="stat-desc">Win %</p>
             </v-col>
             <v-col>
-              <p class="text-h3 text--primary stat-value">{{ currentStreak }}</p>
+              <p class="text--primary stat-value">{{ currentStreak }}</p>
               <p class="stat-desc">Current Streak</p>
             </v-col>
             <v-col>
-              <p class="text-h3 text--primary stat-value">{{ maxStreak }}</p>
+              <p class="text--primary stat-value">{{ maxStreak }}</p>
               <p class="stat-desc">Max Streak</p>
             </v-col>
           </v-row>
@@ -312,10 +312,25 @@ p {
 
 .stat-value {
   margin-bottom: 0 !important;
+
+  @media screen and (max-width: 350px) {
+    font-size: 1.25rem;
+    line-height: 1.25rem;
+  }
+  @media screen and (min-width: 350px) and (max-width: 400px) {
+    font-size: 1.7rem;
+    line-height: 1.7rem;
+  }
+  @media screen and (min-width: 400px) {
+    font-size: 2rem;
+    line-height: 2rem;
+  }
 }
 
 .stat-desc {
   margin-top: 0 !important;
+  font-size: 12px;
+  line-height: 12px;
 }
 
 .share-button {

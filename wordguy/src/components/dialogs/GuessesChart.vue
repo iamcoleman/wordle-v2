@@ -5,9 +5,6 @@ import ChartJSPluginDatalabels from 'chartjs-plugin-datalabels';
 export default {
   extends: HorizontalBar,
   mixins: [mixins.reactiveProp],
-  // components: {
-  //   ChartJSPluginDatalabels,
-  // },
 
   name: 'GuessesChart',
 
@@ -29,6 +26,7 @@ export default {
           },
           ticks: {
             display: false,
+            beginAtZero: true,
           },
         }],
         yAxes: [{

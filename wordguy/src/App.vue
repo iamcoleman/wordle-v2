@@ -13,6 +13,7 @@
       color="white"
       flat
       outlined
+      style="height: 56px;"
     >
       <v-container class="py-0 fill-height app-container">
         <v-btn icon @click="openNewGame(0)">
@@ -28,7 +29,7 @@
       </v-container>
     </v-app-bar>
 
-    <v-main>
+    <v-main class="main-override">
       <v-divider style="max-width: 500px; margin: 0 auto;"></v-divider>
       <v-container
         ref="board-container"
@@ -37,6 +38,7 @@
       >
 <!--        <router-view/>-->
         <Board
+          v-bind:control-height="controlHeight"
           v-bind:board-data="boardData"
           v-bind:win-animation="winAnimation"
           v-bind:shake-animation="shakeAnimation"
@@ -44,7 +46,7 @@
       </v-container>
     </v-main>
 
-    <v-footer app color="white">
+    <v-footer app color="white" class="disable-dbl-tap-zoom" style="height: 210px;">
       <v-container class="app-container fill-height" style="padding: 0;">
         <Keyboard
           v-bind:keyboard-absent="keyboardStatus.absent"
@@ -76,6 +78,8 @@ export default {
   },
 
   data: () => ({
+    controlHeight: 0,
+
     wordList,
     startingDate: new Date(2022, 0, 1, 0, 0, 0, 0),
     currentDate: new Date(),
@@ -497,9 +501,23 @@ export default {
       // create new game
       this.createNewGame();
     }
+
+    // control-height
+    this.$nextTick(() => {
+      window.addEventListener('resize', this.controlHeightResize);
+      this.controlHeightResize();
+    });
+  },
+
+  beforeDestroy() {
+    window.removeEventListener('resize', this.controlHeightResize);
   },
 
   methods: {
+    controlHeightResize() {
+      this.controlHeight = this.$refs['board-container'].clientHeight;
+    },
+
     getTodaysSolution() {
       let day = Math.abs(this.currentDate.setHours(0, 0, 0, 0)
         - this.startingDate.setHours(0, 0, 0, 0));
@@ -544,15 +562,16 @@ export default {
     submitRow() {
       // not 6 letters in row
       if (this.currentRowLetters.length !== 6) {
-        console.error('Row does not have 6 characters...');
         this.shakeRow();
+        this.$toast.warning('Row does not have 6 characters');
         return;
       }
 
       // not in wordlist
       if (!this.wordList.includes(this.currentRowLetters.join(''))) {
-        console.error('Word not in wordlist...');
         this.shakeRow();
+        /* eslint-disable-next-line */
+        this.$toast.warning(`${this.currentRowLetters.join('').toUpperCase()} is not in the word list`);
         return;
       }
 
@@ -572,6 +591,8 @@ export default {
         this.saveGameToStorage('WIN');
         // generate statistics
         this.generateStats();
+        // open WIN toast
+        this.$toast.success(`${this.solution.toUpperCase()} is correct!`);
         // open statistics dialog (1000ms for flips, 1700ms for bounce)
         this.openStats(1000 + 1700);
         return;
@@ -587,6 +608,12 @@ export default {
         this.saveGameToStorage('FAIL');
         // generate statistics
         this.generateStats();
+        // open FAIL toast
+        this.$toast.error(`${this.solution.toUpperCase()} was the solution...`, {
+          timeout: false,
+        });
+        // open statistics dialog (1000ms for flips)
+        this.openStats(1000);
         return;
       }
 
@@ -640,16 +667,15 @@ export default {
       // handle all 'correct' first and remove correct chars from `solutionCopy`
       for (let i = 0; i < this.currentRowLetters.length; i += 1) {
         const currLetter = this.currentRowLetters[i];
-        const charIndex = solutionCopy.indexOf(currLetter);
 
-        if (charIndex === i) {
+        if (currLetter === solutionCopy[i]) {
           // the character is 'correct'
           rowData[i] = {
             letter: currLetter,
             status: 'correct',
           };
           // remove character from `solutionCopy` bc it has been accounted for
-          solutionCopy = this.setCharAt(solutionCopy, charIndex, '0');
+          solutionCopy = this.setCharAt(solutionCopy, i, '0');
         }
       }
 
@@ -856,7 +882,7 @@ export default {
       const parsedGameState = JSON.stringify(gameState);
       localStorage.setItem('gameState', parsedGameState);
 
-      // TODO: Launch the 'instruction/new game' dialog
+      this.openNewGame();
     },
 
     updateMsUntilNewGameAvailable() {
@@ -882,6 +908,15 @@ export default {
       setTimeout(() => {
         this.showNewGameDialog = true;
       }, delay);
+    },
+
+    /* Replaces the character at `index` with `char` in string `str` */
+    setCharAt(str, index, char) {
+      if (index > (str.length - 1)) {
+        return str;
+      }
+
+      return str.substr(0, index) + char + str.substr(index + 1);
     },
 
     test() {
@@ -912,23 +947,17 @@ export default {
 
       // console.log(this.boardData);
     },
-
-    /* Replaces the character at `index` with `char` in string `str` */
-    setCharAt(str, index, char) {
-      if (index > (str.length - 1)) {
-        return str;
-      }
-
-      return str.substr(0, index) + char + str.substr(index + 1);
-    },
   },
 };
 </script>
 
 <style lang="scss">
-$new-color: red;
-
-.top-nav {
-  background-color: $new-color;
+.main-override {
+  padding: 0 !important;
+  position: fixed !important;
+  top: 56px !important;
+  bottom: 210px !important;
+  left: 0 !important;
+  right: 0 !important;
 }
 </style>
