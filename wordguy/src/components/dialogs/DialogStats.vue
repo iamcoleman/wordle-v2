@@ -250,18 +250,15 @@ export default {
         text += gameState.gameStatus === 'FAIL' ? ' F/6' : ` ${gameState.rowIndex + 1}/6`;
         text += '\n\n';
         // create board text
-        text += this.createBoardText(gameState.boardData);
+        text += this.createBoardText(gameState.boardData, gameState.rowIndex);
       }
 
       return text;
     },
 
-    createBoardText(boardData) {
+    createBoardText(boardData, rowIndex) {
       let boardText = '';
-      for (let row = 0; row < boardData.length; row += 1) {
-        if (boardData[row][0].letter === '') {
-          break;
-        }
+      for (let row = 0; row <= rowIndex; row += 1) {
         for (let col = 0; col < boardData[row].length; col += 1) {
           switch (boardData[row][col].status) {
             case 'present':
@@ -275,7 +272,9 @@ export default {
               break;
           }
         }
-        boardText += '\n';
+        if (row !== rowIndex) {
+          boardText += '\n';
+        }
       }
 
       return boardText;

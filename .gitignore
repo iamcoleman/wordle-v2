@@ -105,3 +105,7 @@ dist
 
 # IDE
 .idea/
+
+# Certs
+wordguy/nginx/certs/
+wordguy/nginx_prod/certs

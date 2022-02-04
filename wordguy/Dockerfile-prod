@@ -8,15 +8,21 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN rm /app/nginx
-RUN rm /app/nginx_prod
+RUN rm -r /app/nginx
+RUN rm -r /app/nginx_prod
 RUN npm run build
 
 # Nginx stage named "production"
 FROM nginx:stable-alpine AS production
+# frontend files
 COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx/default.conf /etc/nginx/conf.d/
-COPY nginx/nginx.conf /etc/nginx/
-COPY nginx/mime.types /etc/nginx/
+# certs
+COPY nginx_prod/certs/iamcoleman.io.chained.crt /etc/nginx/ssl/
+COPY nginx_prod/certs/iamcoleman.io.key /etc/nginx/ssl/
+# nginx config
+COPY nginx_prod/default.conf /etc/nginx/conf.d/
+COPY nginx_prod/nginx.conf /etc/nginx/
+COPY nginx_prod/mime.types /etc/nginx/
 EXPOSE 8080
+EXPOSE 8090
 CMD ["nginx", "-g", "daemon off;"]
