@@ -59,7 +59,15 @@ export default {
       handler: function watchStatus(newVal, oldVal) {
         this.$nextTick(() => {
           if (oldVal === 'tbd' && !!newVal) {
+            // `status` is going from 'tbd' to ('absent'|'present'|'correct')
             this.$refs.tile.$el.classList.add(this.flipInClass);
+          } else if (!!oldVal && !newVal) {
+            // `status` is going from ('tbd'|'absent'|'present'|'correct') to ''
+            // e.g. the boardData has been reset
+            this.$refs.tile.$el.classList.remove('tile-tbd');
+            this.$refs.tile.$el.classList.remove('tile-absent');
+            this.$refs.tile.$el.classList.remove('tile-present');
+            this.$refs.tile.$el.classList.remove('tile-correct');
           }
         });
       },

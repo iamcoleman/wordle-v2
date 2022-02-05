@@ -35,19 +35,49 @@
         <!-- NEXT GAME & SHARE -->
         <v-container v-if="showShare">
           <v-row class="text-center align-center flex-nowrap">
+
+            <!-- NEXT GAME -->
             <v-col>
               <p class="text-h6 text-center text--primary" style="margin: 0;">
                 NEXT WORDSKI
               </p>
-              <p class="text-h4 text--primary">
-                <countdown :time="ms" :transform="transform">
+              <!-- COUNTDOWN -->
+              <p class="text-h4 text--primary" v-if="!showNextGame">
+                <countdown :time="ms" :transform="transform" @end="showNextGame = true">
                   <template slot-scope="props">
                     {{ props.hours }}:{{ props.minutes }}:{{ props.seconds }}
                   </template>
                 </countdown>
               </p>
+              <!-- NEW GAME BTN -->
+              <div v-if="showNextGame" style="margin-top: 1rem;">
+                <!-- Large Btn -->
+                <v-btn
+                  elevation="0"
+                  color="#30a5a5"
+                  class="white--text"
+                  v-if="!useSmallButton"
+                  @click="$emit('next-game')"
+                >
+                  PLAY NOW
+                </v-btn>
+                <!-- Small Btn -->
+                <v-btn
+                  small
+                  elevation="0"
+                  color="#30a5a5"
+                  class="white--text"
+                  v-if="useSmallButton"
+                  @click="$emit('next-game')"
+                >
+                  PLAY NOW
+                </v-btn>
+              </div>
             </v-col>
+
             <v-divider vertical></v-divider>
+
+            <!-- SHARE -->
             <v-col>
               <div v-if="webShareApiSupported">
                 <!-- Large Share Button -->
@@ -121,9 +151,10 @@ export default {
       fail: 0,
     },
 
-    ms: 0,
+    ms: 1000 * 60 * 60 * 24,
     showShare: false,
     shareText: '',
+    showNextGame: false,
 
     windowWidth: window.innerWidth,
   }),
@@ -191,8 +222,9 @@ export default {
     },
 
     msNewGame: {
-      handler: function watchLetter(val) {
+      handler: function watchMS(val) {
         this.ms = val;
+        this.showNextGame = val === 0;
       },
       immediate: true,
     },
@@ -290,6 +322,10 @@ export default {
       });
 
       return props;
+    },
+
+    countdownProgress(data) {
+      console.log(data);
     },
 
     onResize() {

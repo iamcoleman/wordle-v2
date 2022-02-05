@@ -6,6 +6,7 @@
       v-model="showStatsDialog"
       v-bind:msNewGame="msUntilNewGameAvailable"
       v-bind:curr-game-status="gameStatus"
+      @next-game="loadNextGame(lastCompletedTs)"
     ></DialogStats>
 
     <v-app-bar
@@ -285,6 +286,11 @@ export default {
       present: [],
       correct: [],
     },
+    newKeyboardStatus: {
+      absent: [],
+      present: [],
+      correct: [],
+    },
 
     currentRowIndex: 0,
     currentRowLetters: [],
@@ -480,13 +486,8 @@ export default {
     },
 
     newGameAvailable: function computeNewGameAvailable() {
-      if (this.lastCompletedTs) {
-        const lastDate = new Date(this.lastCompletedTs);
-        lastDate.setHours(0, 0, 0, 0);
-        const currentDate = new Date();
-        currentDate.setHours(0, 0, 0, 0);
-
-        return lastDate < currentDate;
+      if (this.dayOffset) {
+        return this.dayOffset < this.getDayOffset();
       }
 
       return false;
@@ -507,10 +508,16 @@ export default {
       window.addEventListener('resize', this.controlHeightResize);
       this.controlHeightResize();
     });
+
+    // keyboard input
+    this.$nextTick(() => {
+      window.addEventListener('keydown', this.keyboardInput);
+    });
   },
 
   beforeDestroy() {
     window.removeEventListener('resize', this.controlHeightResize);
+    window.removeEventListener('keydown', this.keyboardInput);
   },
 
   methods: {
@@ -519,7 +526,7 @@ export default {
     },
 
     getTodaysSolution() {
-      let day = Math.abs(this.currentDate.setHours(0, 0, 0, 0)
+      let day = Math.abs(new Date().setHours(0, 0, 0, 0)
         - this.startingDate.setHours(0, 0, 0, 0));
       day = Math.ceil(day / (1000 * 60 * 60 * 24));
 
@@ -527,10 +534,20 @@ export default {
     },
 
     getDayOffset() {
-      const dayOffset = Math.abs(this.currentDate.setHours(0, 0, 0, 0)
+      const dayOffset = Math.abs(new Date().setHours(0, 0, 0, 0)
         - this.startingDate.setHours(0, 0, 0, 0));
 
       return Math.ceil(dayOffset / (1000 * 60 * 60 * 24));
+    },
+
+    keyboardInput(key) {
+      if (key.keyCode === 8) {
+        this.onKeyInput('delete');
+      } else if (key.keyCode === 13) {
+        this.onKeyInput('submit');
+      } else if (key.keyCode >= 65 && key.keyCode <= 90) {
+        this.onKeyInput(key.key.toLowerCase());
+      }
     },
 
     onKeyInput(key) {
@@ -587,6 +604,10 @@ export default {
         this.lastCompletedTs = new Date().getTime();
         // update `winAnimation`
         Vue.set(this.winAnimation, this.currentRowIndex, true);
+        // reset `winAnimation` (1000ms for flips, 1700ms for bounce)
+        setTimeout(() => {
+          Vue.set(this.winAnimation, this.currentRowIndex, false);
+        }, 2700);
         // save `WIN` to storage
         this.saveGameToStorage('WIN');
         // generate statistics
@@ -772,7 +793,7 @@ export default {
       totalGuesses += (newStats.guesses['4'] * 4);
       totalGuesses += (newStats.guesses['5'] * 5);
       totalGuesses += (newStats.guesses['6'] * 6);
-      totalGuesses += (newStats.guesses.fail * 6);
+      totalGuesses += (newStats.guesses.fail * 6); // fail counts as 6 guesses
       newStats.averageGuesses = (totalGuesses / newStats.gamesPlayed);
 
       // save `newStats` to LocalStorage
@@ -789,6 +810,10 @@ export default {
       this.gameStatus = this.newGameState.gameStatus;
       // set `boardData` to default
       this.boardData = this.newGameState.boardData;
+      // set `keyboardStatus` to default
+      this.keyboardStatus = this.newKeyboardStatus;
+      // set `currentRowLetters` to default
+      this.currentRowLetters = [];
       // set `currentRowIndex` to 0
       this.currentRowIndex = this.newGameState.rowIndex;
 
@@ -817,8 +842,10 @@ export default {
 
       // set `lastCompletedTs` before gameStatus check because `newGameAvailable` requires it
       this.lastCompletedTs = gameState.lastCompletedTs;
+      // set `dayOffset` before gameStatus check because `newGameAvailable` requires it
+      this.dayOffset = gameState.dayOffset;
 
-      // check if game is in completed state
+      // check if gameState from LocalStorage is in completed state
       if (gameState.gameStatus === 'WIN' || gameState.gameStatus === 'FAIL') {
         // then, check if new game is available
         if (this.newGameAvailable) {
@@ -826,6 +853,8 @@ export default {
           return;
         }
       }
+
+      // if gameState from LocalStorage is not in completed state, then load it in
 
       // set `solution`
       this.solution = gameState.solution;
