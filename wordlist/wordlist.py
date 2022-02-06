@@ -58,7 +58,25 @@ def create_long_wordlist():
     print(len(six_fellas))
 
 
+def create_acceptable_guesses():
+    six_gods = []
+    with open('en_US-custom-70.dic', encoding='utf-8') as f:
+        for line in f:
+            words = line.split('/')
+            if re.match(r'^\w{6}$', words[0]):
+                # skip all the uppercase words (pronouns and such)
+                # if words[0][0].isupper():
+                #     continue
+                # skip (some of) the naughty words
+                if len(words) > 1 and '!' in words[1]:
+                    continue
+                six_gods.append(words[0].lower().replace('\n', ''))
+    print(six_gods)
+    print(len(six_gods))
+
+
 if __name__ == '__main__':
     # create_wordlist()
-    create_medium_wordlist()
+    # create_medium_wordlist()
     # create_long_wordlist()
+    create_acceptable_guesses()

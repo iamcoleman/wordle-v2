@@ -59,6 +59,14 @@
         <v-container style="margin-top: 4rem;">
           <v-row dense>
             <v-col>
+              <span class="small-details">
+                Inspired by the original
+                <a href="https://www.powerlanguage.co.uk/wordle/" target="_blank">Wordle</a>
+              </span>
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col>
               <span class="small-details">Copyright 2022.</span>
             </v-col>
             <v-spacer></v-spacer>

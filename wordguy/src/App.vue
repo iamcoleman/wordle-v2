@@ -74,7 +74,7 @@ import Board from '@/components/Board.vue';
 import DialogNewGame from '@/components/dialogs/DialogNewGame.vue';
 import DialogStats from '@/components/dialogs/DialogStats.vue';
 import DialogSettings from '@/components/dialogs/DialogSettings.vue';
-import wordList from '@/store/wordlist';
+import { acceptableGuesses, wordList } from '@/store/wordlist';
 
 export default {
   name: 'App',
@@ -91,7 +91,8 @@ export default {
     controlHeight: 0,
 
     wordList,
-    startingDate: new Date(2022, 0, 1, 0, 0, 0, 0),
+    acceptableGuesses,
+    startingDate: new Date(2022, 1, 1, 0, 0, 0, 0),
     currentDate: new Date(),
 
     solution: null,
@@ -594,8 +595,8 @@ export default {
         return;
       }
 
-      // not in wordlist
-      if (!this.wordList.includes(this.currentRowLetters.join(''))) {
+      // not in acceptable guesses
+      if (!this.acceptableGuesses.includes(this.currentRowLetters.join(''))) {
         this.shakeRow();
         /* eslint-disable-next-line */
         this.$toast.warning(`${this.currentRowLetters.join('').toUpperCase()} is not in the word list`);
