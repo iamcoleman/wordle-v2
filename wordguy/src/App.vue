@@ -8,6 +8,10 @@
       v-bind:curr-game-status="gameStatus"
       @next-game="loadNextGame(lastCompletedTs)"
     ></DialogStats>
+    <DialogSettings
+      v-model="showSettingsDialog"
+      :curr-day-offset="dayOffset"
+    ></DialogSettings>
 
     <v-app-bar
       app
@@ -17,14 +21,17 @@
       style="height: 56px;"
     >
       <v-container class="py-0 fill-height app-container">
-        <v-btn icon @click="openNewGame(0)">
+        <v-btn icon @click="openNewGame(0)" class="bar-buttons">
           <v-icon>fas fa-info</v-icon>
         </v-btn>
         <v-spacer></v-spacer>
         <h1>WORDSKI</h1>
         <v-spacer></v-spacer>
-        <v-btn icon @click="openStats(0)">
+        <v-btn icon @click="openStats(0)" class="bar-buttons">
           <v-icon>far fa-chart-bar</v-icon>
+        </v-btn>
+        <v-btn icon @click="openSettings(0)" class="bar-buttons">
+          <v-icon>fas fa-cog</v-icon>
         </v-btn>
 <!--        <v-btn @click="test()">test</v-btn>-->
       </v-container>
@@ -66,6 +73,7 @@ import Keyboard from '@/components/Keyboard.vue';
 import Board from '@/components/Board.vue';
 import DialogNewGame from '@/components/dialogs/DialogNewGame.vue';
 import DialogStats from '@/components/dialogs/DialogStats.vue';
+import DialogSettings from '@/components/dialogs/DialogSettings.vue';
 import wordList from '@/store/wordlist';
 
 export default {
@@ -76,6 +84,7 @@ export default {
     Keyboard,
     DialogNewGame,
     DialogStats,
+    DialogSettings,
   },
 
   data: () => ({
@@ -96,6 +105,7 @@ export default {
     showNewGameDialog: false,
     showStatsDialog: false,
     msUntilNewGameAvailable: 0,
+    showSettingsDialog: false,
 
     newGameState: {
       boardData: [
@@ -939,6 +949,12 @@ export default {
       }, delay);
     },
 
+    openSettings(delay = 0) {
+      setTimeout(() => {
+        this.showSettingsDialog = true;
+      }, delay);
+    },
+
     /* Replaces the character at `index` with `char` in string `str` */
     setCharAt(str, index, char) {
       if (index > (str.length - 1)) {
@@ -988,5 +1004,20 @@ export default {
   bottom: 210px !important;
   left: 0 !important;
   right: 0 !important;
+}
+
+.bar-buttons {
+  @media screen and (max-width: 310px) {
+    height: 28px !important;
+    width: 28px !important;
+  }
+  @media screen and (min-width: 310px) and (max-width: 350px) {
+    height: 36px !important;
+    width: 36px !important;
+  }
+  @media screen and (min-width: 350px) {
+    height: 48px !important;
+    width: 48px !important;
+  }
 }
 </style>

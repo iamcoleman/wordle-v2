@@ -199,6 +199,14 @@ export default {
   }
 }
 
+@media screen and (max-width: 350px) {
+  .tile {
+    font-size: 1rem !important;
+    line-height: 1rem !important;
+    border-width: 2px;
+  }
+}
+
 // Animations
 @keyframes PopIn {
   from {

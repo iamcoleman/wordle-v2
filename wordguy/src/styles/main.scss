@@ -33,3 +33,7 @@ $kb-bg-color: $color-tone-4;
 .disable-dbl-tap-zoom {
   touch-action: manipulation;
 }
+
+.settings-switch .v-input__slot {
+  justify-content: end !important;
+}
