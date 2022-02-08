@@ -92,7 +92,7 @@ export default {
 
     wordList,
     acceptableGuesses,
-    startingDate: new Date(2022, 1, 1, 0, 0, 0, 0),
+    startingDate: new Date(2022, 0, 1, 0, 0, 0, 0),
     currentDate: new Date(),
 
     solution: null,
