@@ -609,6 +609,8 @@ export default {
 
       // check for `WIN`
       if (this.currentRowLetters.join('') === this.solution) {
+        // check for streak - uses `lastCompletedTs` before it is updated
+        const isStreak = this.checkForStreak(this.lastCompletedTs);
         // update `gameStatus`
         this.gameStatus = 'WIN';
         // update `lastCompletedTs`
@@ -622,7 +624,7 @@ export default {
         // save `WIN` to storage
         this.saveGameToStorage('WIN');
         // generate statistics
-        this.generateStats();
+        this.generateStats(isStreak);
         // open WIN toast
         this.$toast.success(`${this.solution.toUpperCase()} is correct!`);
         // open statistics dialog (1000ms for flips, 1700ms for bounce)
@@ -652,6 +654,16 @@ export default {
       // continue the game if no `WIN` or `FAIL`
       this.nextTurn();
       this.saveGameToStorage('IN_PROGRESS');
+    },
+
+    checkForStreak(lastCompletedTs) {
+      const lastCompletedDate = new Date(lastCompletedTs);
+      const currentDate = new Date();
+
+      const diff = currentDate.setHours(0, 0, 0, 0)
+        - lastCompletedDate.setHours(0, 0, 0, 0);
+
+      return Math.round(diff / 864e5) === 1;
     },
 
     updateKeyboardStatus(rowString) {
@@ -760,7 +772,7 @@ export default {
       }, 600);
     },
 
-    generateStats() {
+    generateStats(isStreak = false) {
       let prevStats = null;
       if (!localStorage.statistics) {
         console.log('No statistics found in LocalStorage...');
@@ -771,13 +783,22 @@ export default {
 
       const newStats = JSON.parse(JSON.stringify(prevStats)); // deep copy
 
-      // update `currentStreak`, `gamesPlayed`, and `gamesWon`
+      // update `currentStreak`
       if (this.gameStatus === 'WIN') {
-        newStats.currentStreak += 1;
+        if (isStreak) {
+          newStats.currentStreak += 1;
+        } else {
+          newStats.currentStreak = 1;
+        }
+      } else {
+        newStats.currentStreak = 0;
+      }
+
+      // update `gamesPlayed` and `gamesWon`
+      if (this.gameStatus === 'WIN') {
         newStats.gamesPlayed += 1;
         newStats.gamesWon += 1;
       } else {
-        newStats.currentStreak = 0;
         newStats.gamesPlayed += 1;
       }
 
@@ -852,6 +873,7 @@ export default {
       const gameState = JSON.parse(localStorage.getItem('gameState'));
 
       // set `lastCompletedTs` before gameStatus check because `newGameAvailable` requires it
+      // (not anymore I don't think)
       this.lastCompletedTs = gameState.lastCompletedTs;
       // set `dayOffset` before gameStatus check because `newGameAvailable` requires it
       this.dayOffset = gameState.dayOffset;
