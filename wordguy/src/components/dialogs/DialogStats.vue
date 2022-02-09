@@ -277,7 +277,7 @@ export default {
       if (gameState) {
         gameState = JSON.parse(gameState);
         // set Wordski number
-        text += `Wordski ${gameState.dayOffset}`;
+        text += `Wordski #${gameState.dayOffset}`;
         // set X/6
         text += gameState.gameStatus === 'FAIL' ? ' F/6' : ` ${gameState.rowIndex + 1}/6`;
         text += '\n\n';
@@ -322,10 +322,6 @@ export default {
       });
 
       return props;
-    },
-
-    countdownProgress(data) {
-      console.log(data);
     },
 
     onResize() {

@@ -104,7 +104,7 @@ export default {
 
   methods: {
     openTwitter() {
-      window.open('https://twitter.com/ColemanLyski', '_blank');
+      window.open('https://twitter.com/WordskiGame', '_blank');
     },
 
     openEmail() {
