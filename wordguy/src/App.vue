@@ -841,9 +841,11 @@ export default {
       // set `gameStatus` to 'IN_PROGRESS'
       this.gameStatus = this.newGameState.gameStatus;
       // set `boardData` to default
-      this.boardData = this.newGameState.boardData;
+      // this.boardData = this.newGameState.boardData;
+      this.boardData = JSON.parse(JSON.stringify(this.newGameState.boardData));
       // set `keyboardStatus` to default
-      this.keyboardStatus = this.newKeyboardStatus;
+      // this.keyboardStatus = this.newKeyboardStatus;
+      this.keyboardStatus = JSON.parse(JSON.stringify(this.newKeyboardStatus));
       // set `currentRowLetters` to default
       this.currentRowLetters = [];
       // set `currentRowIndex` to 0
@@ -932,7 +934,7 @@ export default {
       this.dayOffset = this.getDayOffset();
 
       const gameState = {
-        boardData: this.newGameState.boardData,
+        boardData: JSON.parse(JSON.stringify(this.newGameState.boardData)),
         lastCompletedTs: this.newGameState.lastCompletedTs,
         lastPlayedTs: this.newGameState.lastPlayedTs,
         gameStatus: this.newGameState.gameStatus,
