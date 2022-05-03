@@ -92,6 +92,7 @@ export default {
 
     wordList,
     acceptableGuesses,
+    fullAcceptableGuesses: [...wordList, ...acceptableGuesses],
     startingDate: new Date(2022, 0, 1, 0, 0, 0, 0),
     currentDate: new Date(),
 
@@ -596,7 +597,7 @@ export default {
       }
 
       // not in acceptable guesses
-      if (!this.acceptableGuesses.includes(this.currentRowLetters.join(''))) {
+      if (!this.fullAcceptableGuesses.includes(this.currentRowLetters.join(''))) {
         this.shakeRow();
         /* eslint-disable-next-line */
         this.$toast.warning(`${this.currentRowLetters.join('').toUpperCase()} is not in the word list`);
